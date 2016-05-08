@@ -1,5 +1,5 @@
 {
-    "name": "zambranoher/gae-support-l5-with-sendgrid-support",
+    "name": "zambranoher/gae-support-l5-sendgrid",
     "description": "Google App Engine Support for Laravel 5.1 apps.",
     "license": "MIT",
     "authors": [
