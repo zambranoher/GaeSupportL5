@@ -2,6 +2,8 @@
 
 namespace Shpasser\GaeSupportL5\Mail\Transport;
 
+require 'SendGrid_loader.php';
+
 use Swift_Transport;
 use Swift_Mime_Message;
 use Swift_Events_EventListener;
@@ -9,8 +11,9 @@ use Swift_Attachment;
 use Illuminate\Support\Facades\Log;
 use Shpasser\GaeSupportL5\Foundation\Application;
 
-require_once 'google/appengine/api/mail/Message.php';
-use google\appengine\api\mail\Message as GAEMessage;
+use Shpasser\GaeSupportL5\Mail\Transport\Mail;
+use Shpasser\GaeSupportL5\Mail\Transport\SendGrid;
+
 
 class GaeTransport implements Swift_Transport
 {
@@ -50,9 +53,9 @@ class GaeTransport implements Swift_Transport
         return true;
     }
 
-    /**
+ 	/**
      * {@inheritdoc}
-     */
+    */
     public function send(Swift_Mime_Message $message, &$failedRecipients = null)
     {
         try {
@@ -90,12 +93,32 @@ class GaeTransport implements Swift_Transport
                 $mail_options['attachments'] = $attachments;
             }
 
-            $gae_message = new GAEMessage($mail_options);
-            $gae_message->send();
+            // Connect to your SendGrid account
+			$sendgrid = new SendGrid(env('SENDGRID_USERNAME'), env('SENDGRID_PASSWORD'));
+
+			// Make a message object
+			$mail = new Mail();
+
+			// Add recipients and other message details
+			$mail->addTo($to)->
+				   setFrom(env('MAIL_ADDRES'))->
+				   //setFromName('Servicios ZCSHIRTS')->
+				   setSubject($message->getSubject())->
+				   //setText('Hello World!')->
+				   setHtml($message->getBody());
+
+			// Use the Web API to send your message
+			$sendgrid->send($mail);			
+			
+			
         } catch (InvalidArgumentException $ex) {
+			
             Log::warning("Exception sending mail: ".$ex);
         }
-    }
+    } 
+	 
+	 
+	 
 
     /**
      * {@inheritdoc}
